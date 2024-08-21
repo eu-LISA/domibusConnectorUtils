@@ -34,7 +34,7 @@
         <org.slf4j-api.version>1.7.30</org.slf4j-api.version>
         <spring.boot.version>2.5.15</spring.boot.version>
         <swagger.version>2.9.2</swagger.version>
-        <vaadin.version>14.4.7</vaadin.version>
+        <vaadin.version>24.4.10</vaadin.version>
     </properties>
     <dependencyManagement>
         <dependencies>
