@@ -18,7 +18,7 @@
         <com.sun.xml.jaxb-impl.version>4.0.5</com.sun.xml.jaxb-impl.version>
         <jakarta.xml.bind-api.version>4.0.2</jakarta.xml.bind-api.version>
         <javax.annotation-api.version>2.0.1.Final</javax.annotation-api.version>
-        <javax.javaee-api>8.0</javax.javaee-api>
+        <javax.javaee-api>8.0.1</javax.javaee-api>
         <javax.jws-api>1.1</javax.jws-api>
         <javax.validation-api.version>2.0.1.Final</javax.validation-api.version>
         <javax.xml.jaxb-api.version>2.1</javax.xml.jaxb-api.version>
