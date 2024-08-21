@@ -1,9 +1,20 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.spring.quartz.service;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -19,9 +30,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 public class QuartzJobServiceImpl implements QuartzJobService {
 
@@ -38,7 +46,8 @@ public class QuartzJobServiceImpl implements QuartzJobService {
      * Schedule a job by jobName at given date.
      */
     @Override
-    public boolean scheduleOneTimeJob(String jobName, Class<? extends QuartzJobBean> jobClass, Date date) {
+    public boolean scheduleOneTimeJob(String jobName, Class<? extends QuartzJobBean> jobClass,
+                                      Date date) {
         LOGGER.debug("Request received to scheduleJob");
 
         String jobKey = jobName;
@@ -47,17 +56,21 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
         JobDetail jobDetail = JobUtil.createJob(jobClass, false, context, jobKey, groupKey);
 
-        LOGGER.debug("creating trigger for key :"+jobKey + " at date :"+date);
-        Trigger cronTriggerBean = JobUtil.createSingleTrigger(triggerKey, date, SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+        LOGGER.debug("creating trigger for key :" + jobKey + " at date :" + date);
+        Trigger cronTriggerBean = JobUtil.createSingleTrigger(triggerKey, date,
+                SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
         //Trigger cronTriggerBean = JobUtil.createSingleTrigger(triggerKey, date, SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);
 
         try {
             Scheduler scheduler = schedulerFactoryBean.getScheduler();
             Date dt = scheduler.scheduleJob(jobDetail, cronTriggerBean);
-            LOGGER.debug("Job with key jobKey :"+jobKey+ " and group :"+groupKey+ " scheduled successfully for date :"+dt);
+            LOGGER.debug("Job with key jobKey :" + jobKey + " and group :" + groupKey +
+                    " scheduled successfully for date :" + dt);
             return true;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while scheduling job with key :"+jobKey + " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while scheduling job with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
         }
 
@@ -68,7 +81,8 @@ public class QuartzJobServiceImpl implements QuartzJobService {
      * Schedule a job by jobName at given date.
      */
     @Override
-    public boolean scheduleCronJob(String jobName, Class<? extends QuartzJobBean> jobClass, Date date, String cronExpression) {
+    public boolean scheduleCronJob(String jobName, Class<? extends QuartzJobBean> jobClass,
+                                   Date date, String cronExpression) {
         LOGGER.debug("Request received to scheduleJob");
 
         String jobKey = jobName;
@@ -77,16 +91,20 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
         JobDetail jobDetail = JobUtil.createJob(jobClass, false, context, jobKey, groupKey);
 
-        LOGGER.debug("creating trigger for key :"+jobKey + " at date :"+date);
-        Trigger cronTriggerBean = JobUtil.createCronTrigger(triggerKey, date, cronExpression, SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+        LOGGER.debug("creating trigger for key :" + jobKey + " at date :" + date);
+        Trigger cronTriggerBean = JobUtil.createCronTrigger(triggerKey, date, cronExpression,
+                SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
 
         try {
             Scheduler scheduler = schedulerFactoryBean.getScheduler();
             Date dt = scheduler.scheduleJob(jobDetail, cronTriggerBean);
-            LOGGER.debug("Job with key jobKey :"+jobKey+ " and group :"+groupKey+ " scheduled successfully for date :"+dt);
+            LOGGER.debug("Job with key jobKey :" + jobKey + " and group :" + groupKey +
+                    " scheduled successfully for date :" + dt);
             return true;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while scheduling job with key :"+jobKey + " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while scheduling job with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
         }
 
@@ -102,16 +120,22 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
         String jobKey = jobName;
 
-        LOGGER.debug("Parameters received for updating one time job : jobKey :"+jobKey + ", date: "+date);
+        LOGGER.debug(
+                "Parameters received for updating one time job : jobKey :" + jobKey + ", date: " +
+                        date);
         try {
             //Trigger newTrigger = JobUtil.createSingleTrigger(jobKey, date, SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);
-            Trigger newTrigger = JobUtil.createSingleTrigger(jobKey, date, SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+            Trigger newTrigger = JobUtil.createSingleTrigger(jobKey, date,
+                    SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
 
-            Date dt = schedulerFactoryBean.getScheduler().rescheduleJob(TriggerKey.triggerKey(jobKey), newTrigger);
-            LOGGER.debug("Trigger associated with jobKey :"+jobKey+ " rescheduled successfully for date :"+dt);
+            Date dt = schedulerFactoryBean.getScheduler()
+                    .rescheduleJob(TriggerKey.triggerKey(jobKey), newTrigger);
+            LOGGER.debug("Trigger associated with jobKey :" + jobKey +
+                    " rescheduled successfully for date :" + dt);
             return true;
-        } catch ( Exception e ) {
-            LOGGER.debug("SchedulerException while updating one time job with key :"+jobKey + " message :"+e.getMessage());
+        } catch (Exception e) {
+            LOGGER.debug("SchedulerException while updating one time job with key :" + jobKey +
+                    " message :" + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -126,16 +150,21 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
         String jobKey = jobName;
 
-        LOGGER.debug("Parameters received for updating cron job : jobKey :"+jobKey + ", date: "+date);
+        LOGGER.debug("Parameters received for updating cron job : jobKey :" + jobKey + ", date: " +
+                date);
         try {
             //Trigger newTrigger = JobUtil.createSingleTrigger(jobKey, date, SimpleTrigger.MISFIRE_INSTRUCTION_RESCHEDULE_NEXT_WITH_REMAINING_COUNT);
-            Trigger newTrigger = JobUtil.createCronTrigger(jobKey, date, cronExpression, SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
+            Trigger newTrigger = JobUtil.createCronTrigger(jobKey, date, cronExpression,
+                    SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
 
-            Date dt = schedulerFactoryBean.getScheduler().rescheduleJob(TriggerKey.triggerKey(jobKey), newTrigger);
-            LOGGER.debug("Trigger associated with jobKey :"+jobKey+ " rescheduled successfully for date :"+dt);
+            Date dt = schedulerFactoryBean.getScheduler()
+                    .rescheduleJob(TriggerKey.triggerKey(jobKey), newTrigger);
+            LOGGER.debug("Trigger associated with jobKey :" + jobKey +
+                    " rescheduled successfully for date :" + dt);
             return true;
-        } catch ( Exception e ) {
-            LOGGER.debug("SchedulerException while updating cron job with key :"+jobKey + " message :"+e.getMessage());
+        } catch (Exception e) {
+            LOGGER.debug("SchedulerException while updating cron job with key :" + jobKey +
+                    " message :" + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -152,13 +181,17 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String jobKey = jobName;
 
         TriggerKey tkey = new TriggerKey(jobKey);
-        LOGGER.debug("Parameters received for unscheduling job : tkey :"+jobKey);
+        LOGGER.debug("Parameters received for unscheduling job : tkey :" + jobKey);
         try {
             boolean status = schedulerFactoryBean.getScheduler().unscheduleJob(tkey);
-            LOGGER.debug("Trigger associated with jobKey :"+jobKey+ " unscheduled with status :"+status);
+            LOGGER.debug(
+                    "Trigger associated with jobKey :" + jobKey + " unscheduled with status :" +
+                            status);
             return status;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while unscheduling job with key :"+jobKey + " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while unscheduling job with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -175,14 +208,16 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String groupKey = "SampleGroup";
 
         JobKey jkey = new JobKey(jobKey, groupKey);
-        LOGGER.debug("Parameters received for deleting job : jobKey :"+jobKey);
+        LOGGER.debug("Parameters received for deleting job : jobKey :" + jobKey);
 
         try {
             boolean status = schedulerFactoryBean.getScheduler().deleteJob(jkey);
-            LOGGER.debug("Job with jobKey :"+jobKey+ " deleted with status :"+status);
+            LOGGER.debug("Job with jobKey :" + jobKey + " deleted with status :" + status);
             return status;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while deleting job with key :"+jobKey + " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while deleting job with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -198,14 +233,17 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String jobKey = jobName;
         String groupKey = "SampleGroup";
         JobKey jkey = new JobKey(jobKey, groupKey);
-        LOGGER.debug("Parameters received for pausing job : jobKey :"+jobKey+ ", groupKey :"+groupKey);
+        LOGGER.debug("Parameters received for pausing job : jobKey :" + jobKey + ", groupKey :" +
+                groupKey);
 
         try {
             schedulerFactoryBean.getScheduler().pauseJob(jkey);
-            LOGGER.debug("Job with jobKey :"+jobKey+ " paused succesfully.");
+            LOGGER.debug("Job with jobKey :" + jobKey + " paused succesfully.");
             return true;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while pausing job with key :"+jobName + " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while pausing job with key :" + jobName + " message :" +
+                            e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -222,13 +260,15 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String groupKey = "SampleGroup";
 
         JobKey jKey = new JobKey(jobKey, groupKey);
-        LOGGER.debug("Parameters received for resuming job : jobKey :"+jobKey);
+        LOGGER.debug("Parameters received for resuming job : jobKey :" + jobKey);
         try {
             schedulerFactoryBean.getScheduler().resumeJob(jKey);
-            LOGGER.debug("Job with jobKey :"+jobKey+ " resumed succesfully.");
+            LOGGER.debug("Job with jobKey :" + jobKey + " resumed succesfully.");
             return true;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while resuming job with key :"+jobKey+ " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while resuming job with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -245,13 +285,15 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String groupKey = "SampleGroup";
 
         JobKey jKey = new JobKey(jobKey, groupKey);
-        LOGGER.debug("Parameters received for starting job now : jobKey :"+jobKey);
+        LOGGER.debug("Parameters received for starting job now : jobKey :" + jobKey);
         try {
             schedulerFactoryBean.getScheduler().triggerJob(jKey);
-            LOGGER.debug("Job with jobKey :"+jobKey+ " started now succesfully.");
+            LOGGER.debug("Job with jobKey :" + jobKey + " started now succesfully.");
             return true;
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while starting job now with key :"+jobKey+ " message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while starting job now with key :" + jobKey + " message :" +
+                            e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -267,21 +309,24 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         String jobKey = jobName;
         String groupKey = "SampleGroup";
 
-        LOGGER.debug("Parameters received for checking job is running now : jobKey :"+jobKey);
+        LOGGER.debug("Parameters received for checking job is running now : jobKey :" + jobKey);
         try {
 
-            List<JobExecutionContext> currentJobs = schedulerFactoryBean.getScheduler().getCurrentlyExecutingJobs();
-            if(currentJobs!=null){
+            List<JobExecutionContext> currentJobs =
+                    schedulerFactoryBean.getScheduler().getCurrentlyExecutingJobs();
+            if (currentJobs != null) {
                 for (JobExecutionContext jobCtx : currentJobs) {
                     String jobNameDB = jobCtx.getJobDetail().getKey().getName();
                     String groupNameDB = jobCtx.getJobDetail().getKey().getGroup();
-                    if (jobKey.equalsIgnoreCase(jobNameDB) && groupKey.equalsIgnoreCase(groupNameDB)) {
+                    if (jobKey.equalsIgnoreCase(jobNameDB) &&
+                            groupKey.equalsIgnoreCase(groupNameDB)) {
                         return true;
                     }
                 }
             }
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while checking job with key :"+jobKey+ " is running. error message :"+e.getMessage());
+            LOGGER.debug("SchedulerException while checking job with key :" + jobKey +
+                    " is running. error message :" + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -316,9 +361,9 @@ public class QuartzJobServiceImpl implements QuartzJobService {
                     map.put("lastFiredTime", lastFiredTime);
                     map.put("nextFireTime", nextFireTime);
 
-                    if(isJobRunning(jobName)){
+                    if (isJobRunning(jobName)) {
                         map.put("jobStatus", "RUNNING");
-                    }else{
+                    } else {
                         String jobState = getJobState(jobName);
                         map.put("jobStatus", jobState);
                     }
@@ -334,12 +379,14 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
                     list.add(map);
                     LOGGER.debug("Job details:");
-                    LOGGER.debug("Job Name:"+jobName + ", Group Name:"+ groupName + ", Schedule Time:"+scheduleTime);
+                    LOGGER.debug("Job Name:" + jobName + ", Group Name:" + groupName +
+                            ", Schedule Time:" + scheduleTime);
                 }
 
             }
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while fetching all jobs. error message :"+e.getMessage());
+            LOGGER.debug(
+                    "SchedulerException while fetching all jobs. error message :" + e.getMessage());
             e.printStackTrace();
         }
         return list;
@@ -354,11 +401,12 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             String groupKey = "SampleGroup";
             JobKey jobKey = new JobKey(jobName, groupKey);
             Scheduler scheduler = schedulerFactoryBean.getScheduler();
-            if (scheduler.checkExists(jobKey)){
+            if (scheduler.checkExists(jobKey)) {
                 return true;
             }
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while checking job with name and group exist:"+e.getMessage());
+            LOGGER.debug("SchedulerException while checking job with name and group exist:" +
+                    e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -378,27 +426,28 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             JobDetail jobDetail = scheduler.getJobDetail(jobKey);
 
             List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobDetail.getKey());
-            if(triggers != null && triggers.size() > 0){
+            if (triggers != null && triggers.size() > 0) {
                 for (Trigger trigger : triggers) {
                     TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
 
                     if (TriggerState.PAUSED.equals(triggerState)) {
                         return "PAUSED";
-                    }else if (TriggerState.BLOCKED.equals(triggerState)) {
+                    } else if (TriggerState.BLOCKED.equals(triggerState)) {
                         return "BLOCKED";
-                    }else if (TriggerState.COMPLETE.equals(triggerState)) {
+                    } else if (TriggerState.COMPLETE.equals(triggerState)) {
                         return "COMPLETE";
-                    }else if (TriggerState.ERROR.equals(triggerState)) {
+                    } else if (TriggerState.ERROR.equals(triggerState)) {
                         return "ERROR";
-                    }else if (TriggerState.NONE.equals(triggerState)) {
+                    } else if (TriggerState.NONE.equals(triggerState)) {
                         return "NONE";
-                    }else if (TriggerState.NORMAL.equals(triggerState)) {
+                    } else if (TriggerState.NORMAL.equals(triggerState)) {
                         return "SCHEDULED";
                     }
                 }
             }
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while checking job with name and group exist:"+e.getMessage());
+            LOGGER.debug("SchedulerException while checking job with name and group exist:" +
+                    e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -410,7 +459,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
     @Override
     public boolean stopJob(String jobName) {
         LOGGER.debug("JobServiceImpl.stopJob()");
-        try{
+        try {
             String jobKey = jobName;
             String groupKey = "SampleGroup";
 
@@ -420,7 +469,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             return scheduler.interrupt(jkey);
 
         } catch (SchedulerException e) {
-            LOGGER.debug("SchedulerException while stopping job. error message :"+e.getMessage());
+            LOGGER.debug("SchedulerException while stopping job. error message :" + e.getMessage());
             e.printStackTrace();
         }
         return false;

@@ -1,24 +1,36 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.activemq.service;
 
 
 import eu.ecodex.utils.monitor.activemq.config.ActiveMqEndpointConfigurationProperties;
-import org.apache.activemq.broker.jmx.*;
-import org.apache.activemq.web.*;
-import org.apache.activemq.web.config.WebConsoleConfiguration;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.jms.ConnectionFactory;
-import javax.management.*;
-import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.jms.ConnectionFactory;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.ObjectName;
+import javax.management.QueryExp;
+import javax.management.remote.JMXServiceURL;
+import org.apache.activemq.broker.jmx.BrokerViewMBean;
+import org.apache.activemq.web.BrokerFacade;
+import org.apache.activemq.web.RemoteJMXBrokerFacade;
+import org.apache.activemq.web.SingletonBrokerFacade;
+import org.apache.activemq.web.config.WebConsoleConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class BrokerFacadeFactory implements FactoryBean<BrokerFacade> {
 
@@ -37,7 +49,6 @@ public class BrokerFacadeFactory implements FactoryBean<BrokerFacade> {
         }
         return facade;
     }
-
 
 
     @Override
@@ -113,7 +124,9 @@ public class BrokerFacadeFactory implements FactoryBean<BrokerFacade> {
                 throw new IOException("No broker could be found in the JMX.");
             }
             ObjectName name = brokers.iterator().next();
-            BrokerViewMBean mbean = MBeanServerInvocationHandler.newProxyInstance(platformMBeanServer, name, BrokerViewMBean.class, true);
+            BrokerViewMBean mbean =
+                    MBeanServerInvocationHandler.newProxyInstance(platformMBeanServer, name,
+                            BrokerViewMBean.class, true);
             return mbean;
         }
 
@@ -131,7 +144,9 @@ public class BrokerFacadeFactory implements FactoryBean<BrokerFacade> {
             if (platformMBeanServer != null) {
                 for (int i = 0; i < names.length; i++) {
                     ObjectName name = names[i];
-                    T value = MBeanServerInvocationHandler.newProxyInstance(platformMBeanServer, name, type, true);
+                    T value =
+                            MBeanServerInvocationHandler.newProxyInstance(platformMBeanServer, name,
+                                    type, true);
                     if (value != null) {
                         answer.add(value);
                     }

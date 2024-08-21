@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.activemq.config;
 
 import lombok.Data;
@@ -8,7 +16,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = ActiveMqHealthChecksConfigurationProperties.PREFIX)
 public class ActiveMqHealthChecksConfigurationProperties {
 
-    public static final String PREFIX = ActiveMqEndpointConfigurationProperties.ACTIVEMQ_MONITOR_PREFIX + ".health";
+    public static final String PREFIX =
+            ActiveMqEndpointConfigurationProperties.ACTIVEMQ_MONITOR_PREFIX + ".health";
 
     private boolean enabled = true;
 

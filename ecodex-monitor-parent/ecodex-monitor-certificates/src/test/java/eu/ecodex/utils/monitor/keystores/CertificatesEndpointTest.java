@@ -1,5 +1,15 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.keystores;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import eu.ecodex.utils.monitor.keystores.dto.StoreEntryInfo;
 import eu.ecodex.utils.monitor.keystores.dto.StoreInfo;
@@ -14,8 +24,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test", "dev"})
@@ -42,10 +50,11 @@ class CertificatesEndpointTest {
     @Test
     void testReadStores() {
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity <String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
 
         String url = "http://localhost:" + localServerPort + "/actuator/certificates";
-        ResponseEntity<String> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        ResponseEntity<String> exchange =
+                restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
         assertThat(exchange.getBody()).isNotNull();
 
@@ -54,10 +63,11 @@ class CertificatesEndpointTest {
     @Test
     void testReadStoreInfo() {
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity <String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
 
         String url = "http://localhost:" + localServerPort + "/actuator/certificates/gwstore";
-        ResponseEntity<StoreInfo> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, StoreInfo.class);
+        ResponseEntity<StoreInfo> exchange =
+                restTemplate.exchange(url, HttpMethod.GET, entity, StoreInfo.class);
 
         StoreInfo info = exchange.getBody();
         assertThat(info).isNotNull();
@@ -68,10 +78,11 @@ class CertificatesEndpointTest {
     @Test
     void testCertInfo() {
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity <String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
 
         String url = "http://localhost:" + localServerPort + "/actuator/certificates/gwstore/gw2";
-        ResponseEntity<StoreEntryInfo> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, StoreEntryInfo.class);
+        ResponseEntity<StoreEntryInfo> exchange =
+                restTemplate.exchange(url, HttpMethod.GET, entity, StoreEntryInfo.class);
 
         StoreEntryInfo info = exchange.getBody();
         assertThat(info).isNotNull();
@@ -82,10 +93,12 @@ class CertificatesEndpointTest {
     @Test
     void testCertInfo_notExistent() {
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity <String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
 
-        String url = "http://localhost:" + localServerPort + "/actuator/certificates/gwstore/gw123123";
-        ResponseEntity<StoreEntryInfo> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, StoreEntryInfo.class);
+        String url =
+                "http://localhost:" + localServerPort + "/actuator/certificates/gwstore/gw123123";
+        ResponseEntity<StoreEntryInfo> exchange =
+                restTemplate.exchange(url, HttpMethod.GET, entity, StoreEntryInfo.class);
 
         StoreEntryInfo info = exchange.getBody();
         assertThat(info).isNotNull();

@@ -1,14 +1,26 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.domibus.connector.lib.spring.configuration.validation;
 
 import eu.domibus.connector.lib.spring.configuration.StoreConfigurationProperties;
-
-import javax.validation.*;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import java.util.Set;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class StoreLoadableValidator implements ConstraintValidator<CheckStoreIsLoadable, StoreConfigurationProperties> {
+public class StoreLoadableValidator
+        implements ConstraintValidator<CheckStoreIsLoadable, StoreConfigurationProperties> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreLoadableValidator.class);
 
@@ -26,7 +38,8 @@ public class StoreLoadableValidator implements ConstraintValidator<CheckStoreIsL
             if (value == null) {
                 return true;
             }
-            Set<ConstraintViolation<StoreConfigurationProperties>> path = validator.validateProperty(value, "path");
+            Set<ConstraintViolation<StoreConfigurationProperties>> path =
+                    validator.validateProperty(value, "path");
             if (!path.isEmpty()) {
                 return false;
             }
@@ -34,7 +47,8 @@ public class StoreLoadableValidator implements ConstraintValidator<CheckStoreIsL
                 value.loadKeyStore();
             } catch (StoreConfigurationProperties.CannotLoadKeyStoreException exception) {
                 //TODO: nice message!
-                context.buildConstraintViolationWithTemplate(exception.getCause().getMessage()).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(exception.getCause().getMessage())
+                        .addConstraintViolation();
                 return false;
             }
         } catch (Exception e) {
@@ -60,7 +74,6 @@ public class StoreLoadableValidator implements ConstraintValidator<CheckStoreIsL
 //                throw new StoreConfigurationProperties.ValidationException("Exception occured during open keyStore", e);
 //            }
 //        }
-
 
 
         return true;

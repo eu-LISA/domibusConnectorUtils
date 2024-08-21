@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.domibus.connector.web.login;
 
 import com.vaadin.flow.component.button.Button;
@@ -12,90 +20,96 @@ import eu.domibus.connector.web.layout.DashboardView;
 
 public class ChangePasswordDialog extends Dialog {
 
-	public ChangePasswordDialog(IUserPasswordService userPasswordService, String username, String password) {
-		Div changePasswordDiv = new Div();
-		Label changePassword = new Label("Change Password for User "+username);
-		changePassword.getStyle().set("font-weight", "bold");
-		changePasswordDiv.add(changePassword);
-		changePasswordDiv.getStyle().set("text-align", "center");
-		changePasswordDiv.setVisible(true);
-		add(changePasswordDiv);
-		
-		Div changePassword2Div = new Div();
-		Label changePassword2 = new Label("Your password must be changed.");
-		changePassword2Div.add(changePassword2);
-		changePassword2Div.getStyle().set("text-align", "center");
-		changePassword2Div.setVisible(true);
-		add(changePassword2Div);
-		
-		Div currentPwDiv = new Div();
-		PasswordField currentPw = new PasswordField();
-		currentPw.setLabel("Current Password:");
-		currentPw.setValue(password);
-		currentPwDiv.add(currentPw);
-		currentPwDiv.getStyle().set("text-align", "center");
-		add(currentPwDiv);
-		
-		Div newPwDiv = new Div();
-		PasswordField newPw = new PasswordField();
-		newPw.setLabel("New Password:");
-		newPwDiv.add(newPw);
-		newPwDiv.getStyle().set("text-align", "center");
-		add(newPwDiv);
-		
-		Div confirmNewPwDiv = new Div();
-		PasswordField confirmNewPw = new PasswordField();
-		confirmNewPw.setLabel("Confirm new Password:");
-		confirmNewPwDiv.add(confirmNewPw);
-		confirmNewPwDiv.getStyle().set("text-align", "center");
-		add(confirmNewPwDiv);
-		
-		
-		Div changePasswordButtonContent = new Div();
-		changePasswordButtonContent.getStyle().set("text-align", "center");
-		changePasswordButtonContent.getStyle().set("padding", "10px");
-		Button changePasswordButton = new Button("Change Password");
-		changePasswordButton.addClickListener(e -> {
-			if(currentPw.isEmpty()) {
-				Dialog errorDialog = new LoginErrorDialog("The Field 'Current Password' must not be empty!");
-				errorDialog.open();
-				return;
-			}
-			if(newPw.isEmpty()) {
-				Dialog errorDialog = new LoginErrorDialog("The Field 'New Password' must not be empty!");
-				errorDialog.open();
-				return;
-			}
-			if(confirmNewPw.isEmpty()) {
-				Dialog errorDialog = new LoginErrorDialog("The Field 'Confirm new Password' must not be empty!");
-				errorDialog.open();
-				return;
-			}
-			if(!newPw.getValue().equals(confirmNewPw.getValue())) {
-				Dialog errorDialog = new LoginErrorDialog("The Fields 'New Password' and 'Confirm new Password' must have the same values!");
-				newPw.clear();
-				confirmNewPw.clear();
-				errorDialog.open();
-				return;
-			}
-			
-			try {
-				userPasswordService.changePasswordLogin(username, currentPw.getValue(), newPw.getValue());
-			} catch (UserLoginException e1) {
-				Dialog errorDialog = new LoginErrorDialog(e1.getMessage());
-				currentPw.clear();
-				newPw.clear();
-				confirmNewPw.clear();
-				errorDialog.open();
-				return;
-			}
-			this.getUI().ifPresent(ui -> ui.navigate(DashboardView.class));
-			close();
-		});
-		changePasswordButtonContent.add(changePasswordButton);
-		
-		
-		add(changePasswordButtonContent);
-	}
+    public ChangePasswordDialog(IUserPasswordService userPasswordService, String username,
+                                String password) {
+        Div changePasswordDiv = new Div();
+        Label changePassword = new Label("Change Password for User " + username);
+        changePassword.getStyle().set("font-weight", "bold");
+        changePasswordDiv.add(changePassword);
+        changePasswordDiv.getStyle().set("text-align", "center");
+        changePasswordDiv.setVisible(true);
+        add(changePasswordDiv);
+
+        Div changePassword2Div = new Div();
+        Label changePassword2 = new Label("Your password must be changed.");
+        changePassword2Div.add(changePassword2);
+        changePassword2Div.getStyle().set("text-align", "center");
+        changePassword2Div.setVisible(true);
+        add(changePassword2Div);
+
+        Div currentPwDiv = new Div();
+        PasswordField currentPw = new PasswordField();
+        currentPw.setLabel("Current Password:");
+        currentPw.setValue(password);
+        currentPwDiv.add(currentPw);
+        currentPwDiv.getStyle().set("text-align", "center");
+        add(currentPwDiv);
+
+        Div newPwDiv = new Div();
+        PasswordField newPw = new PasswordField();
+        newPw.setLabel("New Password:");
+        newPwDiv.add(newPw);
+        newPwDiv.getStyle().set("text-align", "center");
+        add(newPwDiv);
+
+        Div confirmNewPwDiv = new Div();
+        PasswordField confirmNewPw = new PasswordField();
+        confirmNewPw.setLabel("Confirm new Password:");
+        confirmNewPwDiv.add(confirmNewPw);
+        confirmNewPwDiv.getStyle().set("text-align", "center");
+        add(confirmNewPwDiv);
+
+
+        Div changePasswordButtonContent = new Div();
+        changePasswordButtonContent.getStyle().set("text-align", "center");
+        changePasswordButtonContent.getStyle().set("padding", "10px");
+        Button changePasswordButton = new Button("Change Password");
+        changePasswordButton.addClickListener(e -> {
+            if (currentPw.isEmpty()) {
+                Dialog errorDialog =
+                        new LoginErrorDialog("The Field 'Current Password' must not be empty!");
+                errorDialog.open();
+                return;
+            }
+            if (newPw.isEmpty()) {
+                Dialog errorDialog =
+                        new LoginErrorDialog("The Field 'New Password' must not be empty!");
+                errorDialog.open();
+                return;
+            }
+            if (confirmNewPw.isEmpty()) {
+                Dialog errorDialog =
+                        new LoginErrorDialog("The Field 'Confirm new Password' must not be empty!");
+                errorDialog.open();
+                return;
+            }
+            if (!newPw.getValue().equals(confirmNewPw.getValue())) {
+                Dialog errorDialog = new LoginErrorDialog(
+                        "The Fields 'New Password' and 'Confirm new Password' must have the same values!");
+                newPw.clear();
+                confirmNewPw.clear();
+                errorDialog.open();
+                return;
+            }
+
+            try {
+                userPasswordService.changePasswordLogin(username, currentPw.getValue(),
+                        newPw.getValue());
+            } catch (UserLoginException e1) {
+                Dialog errorDialog = new LoginErrorDialog(e1.getMessage());
+                currentPw.clear();
+                newPw.clear();
+                confirmNewPw.clear();
+                errorDialog.open();
+                return;
+            }
+            this.getUI().ifPresent(ui -> ui.navigate(DashboardView.class));
+            close();
+        });
+        changePasswordButtonContent.add(changePasswordButton);
+
+
+        add(changePasswordButtonContent);
+    }
 
 }

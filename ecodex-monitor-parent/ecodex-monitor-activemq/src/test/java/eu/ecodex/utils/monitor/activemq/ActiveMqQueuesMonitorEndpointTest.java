@@ -1,8 +1,21 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.activemq;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import eu.ecodex.utils.monitor.activemq.dto.DestinationInfo;
 import eu.ecodex.utils.monitor.activemq.service.ActiveMqQueuesMonitorEndpoint;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.activemq.broker.BrokerRegistry;
 import org.apache.activemq.broker.BrokerService;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,12 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"test", "dev"})
@@ -50,7 +57,6 @@ class ActiveMqQueuesMonitorEndpointTest {
         broker.start();
 
 
-
     }
 
     @BeforeEach
@@ -68,14 +74,18 @@ class ActiveMqQueuesMonitorEndpointTest {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<String>(headers);
 
-        String url = "http://admin:admin@localhost:" + localServerPort + "/actuator/" + ActiveMqQueuesMonitorEndpoint.ENDPOINT_ID;
+        String url = "http://admin:admin@localhost:" + localServerPort + "/actuator/" +
+                ActiveMqQueuesMonitorEndpoint.ENDPOINT_ID;
         System.out.println("URL: " + url);
 
 
         ParameterizedTypeReference t = ParameterizedTypeReference.forType(Collection.class);
 
 
-        ResponseEntity<List<DestinationInfo>> exchange = restTemplate.exchange(url, HttpMethod.GET, entity, new ParameterizedTypeReference<List<DestinationInfo>>(){});
+        ResponseEntity<List<DestinationInfo>> exchange =
+                restTemplate.exchange(url, HttpMethod.GET, entity,
+                        new ParameterizedTypeReference<List<DestinationInfo>>() {
+                        });
 
         Collection dstCollection = exchange.getBody();
 

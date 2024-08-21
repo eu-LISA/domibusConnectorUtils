@@ -1,23 +1,28 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.domibus.connector.web.configuration;
 
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 import eu.domibus.connector.web.utils.RoleRequired;
+import java.util.stream.Stream;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.stream.Stream;
 
 /**
  * SecurityUtils takes care of all such static operations that have to do with
  * security and querying rights from different beans of the UI.
- *
  */
 public class SecurityUtils {
 
@@ -32,14 +37,15 @@ public class SecurityUtils {
      * checking if the request parameter is present and if its value is consistent
      * with any of the request types know.
      *
-     * @param request
-     *            {@link HttpServletRequest}
+     * @param request {@link HttpServletRequest}
      * @return true if is an internal framework request. False otherwise.
      */
     static boolean isFrameworkInternalRequest(HttpServletRequest request) {
-        final String parameterValue = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        final String parameterValue =
+                request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
         return parameterValue != null
-                && Stream.of(ServletHelper.RequestType.values()).anyMatch(r -> r.getIdentifier().equals(parameterValue));
+                && Stream.of(ServletHelper.RequestType.values())
+                .anyMatch(r -> r.getIdentifier().equals(parameterValue));
     }
 
     /**
@@ -58,10 +64,13 @@ public class SecurityUtils {
         RoleRequired annotation = AnnotationUtils.findAnnotation(viewClass, RoleRequired.class);
         if (annotation != null) {
             String role = annotation.role();
-            LOGGER.debug("#isUserAllowedToView: checking if user is in requiredRole [{}] of view [{}]", role, viewClass);
+            LOGGER.debug(
+                    "#isUserAllowedToView: checking if user is in requiredRole [{}] of view [{}]",
+                    role, viewClass);
             return isUserInRole(role);
         }
-        LOGGER.debug("#isUserAllowedToView: View [{}] has no required role, returning true", viewClass);
+        LOGGER.debug("#isUserAllowedToView: View [{}] has no required role, returning true",
+                viewClass);
         return true;
     }
 
@@ -74,7 +83,7 @@ public class SecurityUtils {
 //        if (principal instanceof WebUser) {
 //            return ((WebUser) principal).getUsername();
 //        } else {
-            return principal.toString();
+        return principal.toString();
 //        }
     }
 
@@ -85,12 +94,15 @@ public class SecurityUtils {
 
             userHasRole = authentication.getAuthorities()
                     .stream()
-                    .anyMatch(grantedAuthority -> ("ROLE_" + role).equals(((GrantedAuthority) grantedAuthority).getAuthority()));
+                    .anyMatch(grantedAuthority -> ("ROLE_" + role).equals(
+                            grantedAuthority.getAuthority()));
 
-            LOGGER.trace("User [{}] has roles [{}]", authentication.getPrincipal(), authentication.getAuthorities());
+            LOGGER.trace("User [{}] has roles [{}]", authentication.getPrincipal(),
+                    authentication.getAuthorities());
         }
 
-        LOGGER.debug("Check if user is logged in and has role [{}] returned [{}]", role, userHasRole);
+        LOGGER.debug("Check if user is logged in and has role [{}] returned [{}]", role,
+                userHasRole);
         return userHasRole;
     }
 

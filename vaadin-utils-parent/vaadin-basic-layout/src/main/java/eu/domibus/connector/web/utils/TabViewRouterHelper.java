@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.domibus.connector.web.utils;
 
 import com.vaadin.flow.component.Component;
@@ -12,11 +20,10 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import eu.domibus.connector.web.configuration.SecurityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Helper class for creating a tab menu
@@ -104,7 +111,8 @@ public class TabViewRouterHelper implements BeforeEnterObserver {
         private Component component;
         private Class<? extends Component> clz;
 
-        private TabBuilder() {}
+        private TabBuilder() {
+        }
 
         public TabBuilder withIcon(Icon icon) {
             this.tabIcon = icon;

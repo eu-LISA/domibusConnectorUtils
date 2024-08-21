@@ -1,9 +1,35 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.gw.service;
 
 import eu.ecodex.utils.monitor.gw.config.GatewayMonitorConfigurationProperties;
 import eu.ecodex.utils.monitor.gw.domain.AccessPoint;
 import eu.ecodex.utils.monitor.gw.dto.AccessPointStatusDTO;
 import eu.ecodex.utils.monitor.gw.dto.CheckResultDTO;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSession;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -29,34 +55,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.CollectionUtils;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSession;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 @Component
 public class GatewaysCheckerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GatewaysCheckerService.class);
-
+    private final Map<AccessPoint, AccessPointStatusDTO> apCheck = new HashMap<>();
     @Autowired
     GatewayMonitorConfigurationProperties gatewayMonitorConfig;
-
     @Autowired
     TrustStoreCompleteChainTrustStrategy trustStoreCompleteChainTrustStrategy;
-
-    private Map<AccessPoint, AccessPointStatusDTO> apCheck = new HashMap<>();
 
     public AccessPointStatusDTO getGatewayStatus(AccessPoint ap) {
         return getGatewayStatus(ap, gatewayMonitorConfig.getCheckCacheTimeout());
@@ -64,8 +71,10 @@ public class GatewaysCheckerService {
 
     public AccessPointStatusDTO getGatewayStatus(AccessPoint ap, Duration cacheTimeout) {
         AccessPointStatusDTO status = apCheck.get(ap);
-        if (status != null && status.getCheckTime().plus(cacheTimeout).isAfter(ZonedDateTime.now()) ) {
-            LOGGER.trace("Checking [{}] and hitting [{}] + [{}] cache last check was on [{}]", ap, ZonedDateTime.now(), cacheTimeout, status.getCheckTime());
+        if (status != null &&
+                status.getCheckTime().plus(cacheTimeout).isAfter(ZonedDateTime.now())) {
+            LOGGER.trace("Checking [{}] and hitting [{}] + [{}] cache last check was on [{}]", ap,
+                    ZonedDateTime.now(), cacheTimeout, status.getCheckTime());
             return status;
         }
         LOGGER.info("Checking endpoint [{}]", ap);
@@ -76,13 +85,12 @@ public class GatewaysCheckerService {
         apCheck.put(ap, status);
 
 
-
-        char[] privateKeyPassword = gatewayMonitorConfig.getTls().getPrivateKey().getPassword().toCharArray();
+        char[] privateKeyPassword =
+                gatewayMonitorConfig.getTls().getPrivateKey().getPassword().toCharArray();
         KeyStore keyStore = gatewayMonitorConfig.getTls().getKeyStore().loadKeyStore();
         KeyStore trustStore = gatewayMonitorConfig.getTls().getTrustStore().loadKeyStore();
 
         String minTlsString = gatewayMonitorConfig.getTls().getMinTls();
-
 
 
         SSLContext sslcontext = null;
@@ -91,13 +99,15 @@ public class GatewaysCheckerService {
                     .loadTrustMaterial(trustStore, trustStoreCompleteChainTrustStrategy)
                     .loadKeyMaterial(keyStore, privateKeyPassword, new PrivateKeyStrategy() {
                         @Override
-                        public String chooseAlias(Map<String, PrivateKeyDetails> aliases, SSLParameters sslParameters) {
+                        public String chooseAlias(Map<String, PrivateKeyDetails> aliases,
+                                                  SSLParameters sslParameters) {
                             return gatewayMonitorConfig.getTls().getPrivateKey().getAlias();
                         }
                     })
                     .build();
 
-        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException e) {
+        } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException |
+                 UnrecoverableKeyException e) {
             LOGGER.error("Error while setting up SSLContext", e);
             CheckResultDTO c = new CheckResultDTO();
             c.setName("SSLContext setup");
@@ -105,21 +115,23 @@ public class GatewaysCheckerService {
             c.writeStackTraceIntoDetails(e);
         }
 
-        LOGGER.trace("Client supports: [{}]", CollectionUtils.arrayToList(sslcontext.getSupportedSSLParameters().getProtocols()));
+        LOGGER.trace("Client supports: [{}]",
+                CollectionUtils.arrayToList(sslcontext.getSupportedSSLParameters().getProtocols()));
 
         final ProtocolVersion[] allowedTls;
         ProtocolVersion[] supportedClientProtos =
                 Stream.of(sslcontext.getSupportedSSLParameters().getProtocols())
-                .map(s -> {
-                    try {
-                        return TLS.parse(s);
-                    } catch (ParseException e) {
-                        return null;
-                    }
-                })
-                .filter(p -> p != null)
-                .toArray(ProtocolVersion[]::new);
-        LOGGER.debug("Supported and Allowed client protocols are [{}]", CollectionUtils.arrayToList(supportedClientProtos));
+                        .map(s -> {
+                            try {
+                                return TLS.parse(s);
+                            } catch (ParseException e) {
+                                return null;
+                            }
+                        })
+                        .filter(p -> p != null)
+                        .toArray(ProtocolVersion[]::new);
+        LOGGER.debug("Supported and Allowed client protocols are [{}]",
+                CollectionUtils.arrayToList(supportedClientProtos));
 
         ProtocolVersion minTls;
         try {
@@ -128,20 +140,25 @@ public class GatewaysCheckerService {
             throw new RuntimeException(e);
         }
         allowedTls = Stream.of(TLS.values())
-                    .filter(tls -> tls.greaterEquals(minTls))
-                    .map(t -> { return t.version;})
-                    .filter(p -> ArrayUtils.contains(supportedClientProtos, p))
-                    .toArray(ProtocolVersion[]::new);
+                .filter(tls -> tls.greaterEquals(minTls))
+                .map(t -> {
+                    return t.version;
+                })
+                .filter(p -> ArrayUtils.contains(supportedClientProtos, p))
+                .toArray(ProtocolVersion[]::new);
         status.setAllowedTls(allowedTls);
 
 
-        LOGGER.trace("allowed TLS protocols are [{}]", CollectionUtils.arrayToList(status.getAllowedTls()));
+        LOGGER.trace("allowed TLS protocols are [{}]",
+                CollectionUtils.arrayToList(status.getAllowedTls()));
 
         if (allowedTls.length == 0) {
             CheckResultDTO f = new CheckResultDTO();
             f.setMessage("Client does not support minTls!");
             status.getFailures().add(f);
-            LOGGER.warn("Client supports TLS portocols [{}] but required minTls [{}] is not part of it!", CollectionUtils.arrayToList(supportedClientProtos), minTls);
+            LOGGER.warn(
+                    "Client supports TLS portocols [{}] but required minTls [{}] is not part of it!",
+                    CollectionUtils.arrayToList(supportedClientProtos), minTls);
         }
 
         DefaultHostnameVerifier defaultHostnameVerifier = new DefaultHostnameVerifier();
@@ -150,11 +167,12 @@ public class GatewaysCheckerService {
                 .map(this::mapProtocolVersionToTLS)
                 .toArray(TLS[]::new);
 
-        final SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
-                .setSslContext(sslcontext)
-                .setTlsVersions(tls)
-                .setHostnameVerifier(defaultHostnameVerifier)
-                .build();
+        final SSLConnectionSocketFactory sslSocketFactory =
+                SSLConnectionSocketFactoryBuilder.create()
+                        .setSslContext(sslcontext)
+                        .setTlsVersions(tls)
+                        .setHostnameVerifier(defaultHostnameVerifier)
+                        .build();
 
         final HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
                 .setSSLSocketFactory(sslSocketFactory)
@@ -164,7 +182,8 @@ public class GatewaysCheckerService {
                 .build()) {
             final HttpGet httpRequest = new HttpGet(ap.getEndpoint());
 
-            LOGGER.debug("Executing request " + httpRequest.getMethod() + " " + httpRequest.getUri());
+            LOGGER.debug(
+                    "Executing request " + httpRequest.getMethod() + " " + httpRequest.getUri());
 
             final HttpClientContext clientContext = HttpClientContext.create();
             try (CloseableHttpResponse response = httpclient.execute(httpRequest, clientContext)) {
@@ -196,8 +215,10 @@ public class GatewaysCheckerService {
                     LOGGER.debug("TLS cipher suite {}", sslSession.getCipherSuite());
 
                     status.setUsedTls(TLS.parse(sslSession.getProtocol()));
-                    status.setLocalCertificates(convertToBase64StringArray(sslSession.getLocalCertificates()));
-                    status.setServerCertificates(convertToBase64StringArray(sslSession.getPeerCertificates()));
+                    status.setLocalCertificates(
+                            convertToBase64StringArray(sslSession.getLocalCertificates()));
+                    status.setServerCertificates(
+                            convertToBase64StringArray(sslSession.getPeerCertificates()));
                 } else {
                     LOGGER.info("SSL session is null, cannot provide any information!");
                 }
