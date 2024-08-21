@@ -1,6 +1,12 @@
-package eu.domibus.connector.lib.spring.configuration.types;
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
 
-import org.springframework.util.StringUtils;
+package eu.domibus.connector.lib.spring.configuration.types;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -8,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.util.StringUtils;
 
 public class DomibusConnectorDuration {
 
@@ -36,14 +43,6 @@ public class DomibusConnectorDuration {
         this(milliseconds, TimeUnit.MILLISECONDS);
     }
 
-    public long getMilliseconds() {
-        return unit.toMillis(duration);
-    }
-
-    public Duration getDuration() {
-        return Duration.ofMillis(getMilliseconds());
-    }
-
     /**
      * Factory method constructing an instance from a string.
      *
@@ -53,7 +52,8 @@ public class DomibusConnectorDuration {
      */
     public static DomibusConnectorDuration valueOf(String s) throws NumberFormatException {
         if (!StringUtils.hasText(s)) {
-            throw new NumberFormatException("Null or empty string cannot be converted to duration.");
+            throw new NumberFormatException(
+                    "Null or empty string cannot be converted to duration.");
         }
 
         Matcher m = PARSE_PATTERN.matcher(s.trim());
@@ -65,6 +65,14 @@ public class DomibusConnectorDuration {
         String unit = m.group(2);
 
         return new DomibusConnectorDuration(value, UNITS.get(unit));
+    }
+
+    public long getMilliseconds() {
+        return unit.toMillis(duration);
+    }
+
+    public Duration getDuration() {
+        return Duration.ofMillis(getMilliseconds());
     }
 
 

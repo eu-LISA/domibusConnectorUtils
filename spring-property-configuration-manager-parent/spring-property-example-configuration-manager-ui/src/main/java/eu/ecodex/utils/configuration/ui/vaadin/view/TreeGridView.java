@@ -1,7 +1,14 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.configuration.ui.vaadin.view;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
@@ -10,18 +17,14 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import eu.ecodex.utils.configuration.domain.ConfigurationProperty;
 import eu.ecodex.utils.configuration.domain.ConfigurationPropertyNode;
 import eu.ecodex.utils.configuration.service.ConfigurationPropertyCollector;
+import java.util.Properties;
+import java.util.stream.Stream;
+import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
 
 @HtmlImport("styles/shared-styles.html")
 @Route(value = "treegridview", layout = MainView.class)
@@ -45,7 +48,9 @@ public class TreeGridView extends VerticalLayout {
     @PostConstruct
     public void init() {
 //        Collection<ConfigurationProperty> all = configurationPropertyCollector.getConfigurationProperties("eu.ecodex.utils.configuration.example1");
-        ConfigurationPropertyNode configurationPropertiesHirachie = configurationPropertyCollector.getConfigurationPropertiesHirachie("eu.ecodex.utils.configuration.example1");
+        ConfigurationPropertyNode configurationPropertiesHirachie =
+                configurationPropertyCollector.getConfigurationPropertiesHirachie(
+                        "eu.ecodex.utils.configuration.example1");
 
 //        LOGGER.debug("tree view is {}", configurationPropertiesHirachie);
 
@@ -55,7 +60,8 @@ public class TreeGridView extends VerticalLayout {
                 new AbstractBackEndHierarchicalDataProvider<ConfigurationPropertyNode, Void>() {
 
                     @Override
-                    public int getChildCount(HierarchicalQuery<ConfigurationPropertyNode, Void> query) {
+                    public int getChildCount(
+                            HierarchicalQuery<ConfigurationPropertyNode, Void> query) {
                         if (query.getParent() == null) {
                             return configurationPropertiesHirachie.getChildren().size();
                         }
@@ -68,7 +74,8 @@ public class TreeGridView extends VerticalLayout {
                     }
 
                     @Override
-                    protected Stream<ConfigurationPropertyNode> fetchChildrenFromBackEnd(HierarchicalQuery<ConfigurationPropertyNode, Void> query) {
+                    protected Stream<ConfigurationPropertyNode> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<ConfigurationPropertyNode, Void> query) {
                         if (query.getParent() == null) {
                             return configurationPropertiesHirachie.getChildren().stream();
                         }
@@ -77,7 +84,6 @@ public class TreeGridView extends VerticalLayout {
                 };
 
         grid.setDataProvider(dataProvider);
-
 
 
         grid.addHierarchyColumn(ConfigurationPropertyNode::getNodeName).setHeader("Node Name");
@@ -90,7 +96,6 @@ public class TreeGridView extends VerticalLayout {
                 return null;
             }
         }).setHeader("Property Label");
-
 
 
 //        List<Grid.Column<ConfigurationPropertyNode>> columns = grid.getColumns();
@@ -106,8 +111,6 @@ public class TreeGridView extends VerticalLayout {
 //        grid.setColumns("propertyName", "description", "label");
 
     }
-
-
 
 
 }

@@ -1,13 +1,31 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.spring.quartz.configuration;
+
+import static eu.ecodex.utils.spring.quartz.configuration.ScheduledWithQuartzConfiguration.TRIGGER_AND_JOB_DEFINITION_LIST_BEAN_NAME;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 import eu.ecodex.utils.spring.quartz.annotation.CronStringProvider;
 import eu.ecodex.utils.spring.quartz.annotation.IntervalProvider;
 import eu.ecodex.utils.spring.quartz.annotation.QuartzScheduled;
 import eu.ecodex.utils.spring.quartz.domain.CronJob;
 import eu.ecodex.utils.spring.quartz.domain.TriggerAndJobDefinition;
+import java.text.ParseException;
+import java.time.Duration;
+import java.util.List;
+import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.quartz.*;
+import org.quartz.JobDataMap;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -19,32 +37,21 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
-import java.text.ParseException;
-import java.time.Duration;
-import java.util.List;
-
-import static eu.ecodex.utils.spring.quartz.configuration.ScheduledWithQuartzConfiguration.TRIGGER_AND_JOB_DEFINITION_LIST_BEAN_NAME;
-import static java.time.temporal.ChronoUnit.MILLIS;
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 /**
  * processes all created TriggerAndJobDefinitions
  * must be called after the ScheduledBeanPostProcessor has been run
  */
 public class TriggerAndJobDefinitionProcessor {
 
-    private static final Logger LOGGER = LogManager.getLogger(TriggerAndJobDefinitionProcessor.class);
-
+    private static final Logger LOGGER =
+            LogManager.getLogger(TriggerAndJobDefinitionProcessor.class);
+    @Autowired
+    Scheduler scheduler;
+    @Autowired
+    ApplicationContext applicationContext;
     @Autowired
     @Qualifier(TRIGGER_AND_JOB_DEFINITION_LIST_BEAN_NAME)
     private List<TriggerAndJobDefinition> triggerAndJobDefinitionList;
-
-    @Autowired
-    Scheduler scheduler;
-
-    @Autowired
-    ApplicationContext applicationContext;
 
     @PostConstruct
     public void postConstruct() {
@@ -67,7 +74,6 @@ public class TriggerAndJobDefinitionProcessor {
         factoryBean.setGroup("defaultGroup");
 
 
-
         // set job data map
         JobDataMap jobDataMap = new JobDataMap();
 //        jobDataMap.put("myKey", "myValue");
@@ -81,22 +87,22 @@ public class TriggerAndJobDefinitionProcessor {
         FactoryBean<? extends Trigger> triggerFactoryBean = null;
 
 
-
-
         QuartzScheduled quartzScheduled = triggerAndJobDefinition.getScheduled();
         //check at least one defined
         if (isCronProviderDefined(quartzScheduled) &&
                 isFixedRateProviderDefined(quartzScheduled)
         ) {
-            String error = String.format("Neither fixedRate() or cron() are defined within @QuartzScheduled annotation!");
+            String error =
+                    "Neither fixedRate() or cron() are defined within @QuartzScheduled annotation!";
             throw new TriggerBeanCreationException(error, quartzScheduled);
         }
 
         //check both defined
         if (!isCronProviderDefined(quartzScheduled) &&
-            !isFixedRateProviderDefined(quartzScheduled)
+                !isFixedRateProviderDefined(quartzScheduled)
         ) {
-            String error = String.format("Both fixedRate() and cron() are defined within @QuartzScheduled annotation - you cannot use both!");
+            String error =
+                    "Both fixedRate() and cron() are defined within @QuartzScheduled annotation - you cannot use both!";
             throw new TriggerBeanCreationException(error, quartzScheduled);
         }
 
@@ -114,7 +120,7 @@ public class TriggerAndJobDefinitionProcessor {
         }
 
         try {
-            ((InitializingBean)triggerFactoryBean).afterPropertiesSet();
+            ((InitializingBean) triggerFactoryBean).afterPropertiesSet();
             scheduler.scheduleJob(factoryBean.getObject(), triggerFactoryBean.getObject());
 
         } catch (ParseException e) {
@@ -172,7 +178,7 @@ public class TriggerAndJobDefinitionProcessor {
         return simpleTriggerFactoryBean;
     }
 
-    private <T>  T getBean(String qualifier, Class<T> intervalProviderClass) {
+    private <T> T getBean(String qualifier, Class<T> intervalProviderClass) {
         if (StringUtils.isEmpty(qualifier)) {
             return applicationContext.getBean(intervalProviderClass);
         } else {
@@ -185,7 +191,8 @@ public class TriggerAndJobDefinitionProcessor {
         private final QuartzScheduled quartzScheduledAnnotation;
 
 
-        TriggerBeanCreationException(String message, Throwable exc, QuartzScheduled quartzScheduledAnnotation) {
+        TriggerBeanCreationException(String message, Throwable exc,
+                                     QuartzScheduled quartzScheduledAnnotation) {
             super(message, exc);
             this.quartzScheduledAnnotation = quartzScheduledAnnotation;
         }

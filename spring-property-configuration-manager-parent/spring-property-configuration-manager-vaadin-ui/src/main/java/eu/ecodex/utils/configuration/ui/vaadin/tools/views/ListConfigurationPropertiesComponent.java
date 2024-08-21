@@ -1,13 +1,25 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.configuration.ui.vaadin.tools.views;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.binder.*;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
+import com.vaadin.flow.data.binder.HasValidator;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.Validator;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
@@ -15,6 +27,14 @@ import eu.ecodex.utils.configuration.domain.ConfigurationProperty;
 import eu.ecodex.utils.configuration.service.ConfigurationPropertyChecker;
 import eu.ecodex.utils.configuration.service.ConfigurationPropertyCollector;
 import eu.ecodex.utils.configuration.ui.vaadin.tools.ConfigurationFormsFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,36 +45,26 @@ import org.springframework.boot.context.properties.source.MapConfigurationProper
 import org.springframework.context.annotation.Scope;
 import org.springframework.validation.FieldError;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @org.springframework.stereotype.Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class ListConfigurationPropertiesComponent extends VerticalLayout implements HasValue<HasValue.ValueChangeEvent<Collection<ConfigurationProperty>>, Collection<ConfigurationProperty>>, HasValidator<Collection<ConfigurationProperty>> {
+public class ListConfigurationPropertiesComponent extends VerticalLayout implements
+        HasValue<HasValue.ValueChangeEvent<Collection<ConfigurationProperty>>, Collection<ConfigurationProperty>>,
+        HasValidator<Collection<ConfigurationProperty>> {
 
-    private static final Logger LOGGER = LogManager.getLogger(ListConfigurationPropertiesComponent.class);
-
+    private static final Logger LOGGER =
+            LogManager.getLogger(ListConfigurationPropertiesComponent.class);
+    private final Collection<AbstractField> propertyFields = new ArrayList<>();
     Grid<ConfigurationProperty> grid = new Grid<>(ConfigurationProperty.class, false);
-
     @Autowired
     ConfigurationPropertyCollector configurationPropertyCollector;
-
     @Autowired
     ConfigurationPropertyChecker configurationPropertyChecker;
-
     @Autowired
     ConfigurationFormsFactory configurationFormFactory;
-
     Map<String, String> properties = new HashMap<>();
-
     Label statusLabel = new Label();
-
     Binder<Map<String, String>> binder = new Binder();
-
     private Collection<ConfigurationProperty> configurationProperties = new ArrayList<>();
-    private Collection<AbstractField> propertyFields = new ArrayList<>();
     private boolean readOnly = false;
 
     public ListConfigurationPropertiesComponent() {
@@ -71,7 +81,8 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         grid.addComponentColumn(new ValueProvider<ConfigurationProperty, Component>() {
             @Override
             public Component apply(ConfigurationProperty configurationProperty) {
-                AbstractField field = configurationFormFactory.createField(configurationProperty, binder);
+                AbstractField field =
+                        configurationFormFactory.createField(configurationProperty, binder);
                 propertyFields.add(field);
                 return field;
             }
@@ -106,7 +117,8 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         return configurationProperties;
     }
 
-    public void setConfigurationProperties(Collection<ConfigurationProperty> configurationProperties) {
+    public void setConfigurationProperties(
+            Collection<ConfigurationProperty> configurationProperties) {
         this.configurationProperties = configurationProperties;
         this.grid.setItems(configurationProperties);
 
@@ -119,8 +131,11 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         binder.withValidator(new Validator<Map<String, String>>() {
             @Override
             public ValidationResult apply(Map<String, String> value, ValueContext context) {
-                ConfigurationPropertySource configSource = new MapConfigurationPropertySource(value);
-                List<ValidationErrors> validationErrors = configurationPropertyChecker.validateConfiguration(configSource, configClasses);
+                ConfigurationPropertySource configSource =
+                        new MapConfigurationPropertySource(value);
+                List<ValidationErrors> validationErrors =
+                        configurationPropertyChecker.validateConfiguration(configSource,
+                                configClasses);
                 if (validationErrors.isEmpty()) {
                     return ValidationResult.ok();
                 }
@@ -128,11 +143,12 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
                 String errString = validationErrors.stream().map(err -> err.getAllErrors().stream())
                         .flatMap(Function.identity())
                         .map(objectError -> {
-                            if (objectError instanceof FieldError) {
-                                FieldError fieldError = (FieldError) objectError;
-                                return fieldError.getObjectName() + "." + fieldError.getField() + ": " + fieldError.getDefaultMessage();
+                            if (objectError instanceof FieldError fieldError) {
+                                return fieldError.getObjectName() + "." + fieldError.getField() +
+                                        ": " + fieldError.getDefaultMessage();
                             }
-                            return objectError.getObjectName() + ": " + objectError.getDefaultMessage();
+                            return objectError.getObjectName() + ": " +
+                                    objectError.getDefaultMessage();
                         })
                         .collect(Collectors.joining("; "));
                 return ValidationResult.error(errString);
@@ -154,25 +170,9 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         return beanValidationErrors;
     }
 
-    public static class ConfigurationPropertiesListValidator implements Validator<Collection<ConfigurationProperty>> {
-
-        @Override
-        public ValidationResult apply(Collection<ConfigurationProperty> value, ValueContext context) {
-
-            return null;
-        }
-    }
-
-
     public Validator<Collection<ConfigurationProperty>> getDefaultValidator() {
 
         return Validator.alwaysPass();
-    }
-
-
-    @Override
-    public void setValue(Collection<ConfigurationProperty> value) {
-        setConfigurationProperties(value);
     }
 
     @Override
@@ -180,10 +180,19 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         return getConfigurationProperties();
     }
 
+    @Override
+    public void setValue(Collection<ConfigurationProperty> value) {
+        setConfigurationProperties(value);
+    }
 
     @Override
-    public Registration addValueChangeListener(ValueChangeListener<? super ValueChangeEvent<Collection<ConfigurationProperty>>> listener) {
+    public Registration addValueChangeListener(
+            ValueChangeListener<? super ValueChangeEvent<Collection<ConfigurationProperty>>> listener) {
         return null;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     public void setReadOnly(boolean readOnly) {
@@ -191,9 +200,9 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
         propertyFields.stream().forEach(f -> f.setReadOnly(readOnly));
     }
 
-
-    public boolean isReadOnly() {
-        return readOnly;
+    @Override
+    public boolean isRequiredIndicatorVisible() {
+        return false;
     }
 
     @Override
@@ -201,8 +210,14 @@ public class ListConfigurationPropertiesComponent extends VerticalLayout impleme
 
     }
 
-    @Override
-    public boolean isRequiredIndicatorVisible() {
-        return false;
+    public static class ConfigurationPropertiesListValidator
+            implements Validator<Collection<ConfigurationProperty>> {
+
+        @Override
+        public ValidationResult apply(Collection<ConfigurationProperty> value,
+                                      ValueContext context) {
+
+            return null;
+        }
     }
 }

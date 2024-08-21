@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.configuration.ui.vaadin.tools.configforms;
 
 import com.vaadin.flow.component.AbstractField;
@@ -9,13 +17,22 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.binder.*;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.BinderValidationStatusHandler;
+import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.shared.Registration;
 import eu.ecodex.utils.configuration.domain.ConfigurationProperty;
 import eu.ecodex.utils.configuration.service.ConfigurationPropertyCollector;
 import eu.ecodex.utils.configuration.ui.vaadin.tools.ConfigurationFieldFactory;
 import eu.ecodex.utils.configuration.ui.vaadin.tools.ConfigurationFormsFactory;
 import eu.ecodex.utils.configuration.ui.vaadin.tools.UiConfigurationConversationService;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -23,9 +40,6 @@ import org.jsoup.safety.Whitelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.convert.ConversionService;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @org.springframework.stereotype.Component
@@ -49,9 +63,11 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
 
     public ConfigurationPropertyForm createFormFromConfigurationPropertiesClass(Class clazz) {
         if (!clazz.isAnnotationPresent(ConfigurationProperties.class)) {
-            throw new IllegalArgumentException("the passed class must be annotated with " + ConfigurationProperties.class);
+            throw new IllegalArgumentException(
+                    "the passed class must be annotated with " + ConfigurationProperties.class);
         }
-        Collection<ConfigurationProperty> configurationPropertyFromClazz = configurationPropertyCollector.getConfigurationPropertyFromClazz(clazz);
+        Collection<ConfigurationProperty> configurationPropertyFromClazz =
+                configurationPropertyCollector.getConfigurationPropertyFromClazz(clazz);
 
 //        BeanValidationBinder binder = new BeanValidationBinder(clazz);
         Binder<Map<String, String>> binder = new Binder<>();
@@ -97,7 +113,8 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
         return formLayout;
     }
 
-    public Component createComponentFromConfigurationProperty(ConfigurationProperty prop, Binder<Map<String, String>> binder) {
+    public Component createComponentFromConfigurationProperty(ConfigurationProperty prop,
+                                                              Binder<Map<String, String>> binder) {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
 
         AbstractField field = createField(prop, binder);
@@ -122,10 +139,12 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
         return horizontalLayout;
     }
 
-    public AbstractField createField(final ConfigurationProperty prop, final Binder<Map<String, String>> binder) {
+    public AbstractField createField(final ConfigurationProperty prop,
+                                     final Binder<Map<String, String>> binder) {
         Optional<ConfigurationFieldFactory> ff = fieldCreatorFactories
                 .stream()
-                .filter(configurationFieldFactory -> configurationFieldFactory.canHandle(prop.getType()))
+                .filter(configurationFieldFactory -> configurationFieldFactory.canHandle(
+                        prop.getType()))
                 .findFirst();
         AbstractField field;
         if (ff.isPresent()) {
@@ -133,7 +152,9 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
             field = configurationFieldFactory.createField(prop, binder);
             return field;
         } else {
-            throw new RuntimeException(String.format("No Field Factory found for property %s with type [%s]", prop, prop.getType()));
+            throw new RuntimeException(
+                    String.format("No Field Factory found for property %s with type [%s]", prop,
+                            prop.getType()));
             //Just create a simple text field...
 //            field = createField(prop, binder);
         }
@@ -191,9 +212,10 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
 //    }
 
 
-    public class ConfigurationPropertyForm extends FormLayout implements HasValue<HasValue.ValueChangeEvent<Map<String, String>>, Map<String, String>> {
+    public class ConfigurationPropertyForm extends FormLayout implements
+            HasValue<HasValue.ValueChangeEvent<Map<String, String>>, Map<String, String>> {
 
-        private Label formStatusLabel = new Label();
+        private final Label formStatusLabel = new Label();
 
         /**
          * The by the factory generated binder
@@ -256,14 +278,14 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
 //        }
 
         @Override
-        public void setValue(Map<String, String> value) {
-            this.properties = value;
-            this.binder.setBean(value);
+        public Map<String, String> getValue() {
+            return this.binder.getBean();
         }
 
         @Override
-        public Map<String, String> getValue() {
-            return this.binder.getBean();
+        public void setValue(Map<String, String> value) {
+            this.properties = value;
+            this.binder.setBean(value);
         }
 
         @Override
@@ -274,23 +296,23 @@ public class ConfigurationFormsFactoryImpl implements ConfigurationFormsFactory 
         }
 
         @Override
-        public void setReadOnly(boolean b) {
-            this.readOnly = b;
-        }
-
-        @Override
         public boolean isReadOnly() {
             return readOnly;
         }
 
         @Override
-        public void setRequiredIndicatorVisible(boolean b) {
-
+        public void setReadOnly(boolean b) {
+            this.readOnly = b;
         }
 
         @Override
         public boolean isRequiredIndicatorVisible() {
             return false;
+        }
+
+        @Override
+        public void setRequiredIndicatorVisible(boolean b) {
+
         }
 
         public Binder getBinder() {

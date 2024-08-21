@@ -1,6 +1,19 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.configuration.service;
 
 import eu.ecodex.utils.configuration.domain.ConfigurationPropertiesBean;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +29,11 @@ import org.springframework.boot.context.properties.source.ConfigurationPropertyS
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.validation.Validator;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyChecker {
 
 
-    private static final Logger LOGGER = LogManager.getLogger(ConfigurationPropertyCheckerImpl.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(ConfigurationPropertyCheckerImpl.class);
 
 //    private ConfigurationPropertySource configurationPropertySource;
 
@@ -35,9 +43,11 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
     @Autowired
     private ConfigurationPropertyCollector configurationPropertyCollector;
 
-    public ConfigurationPropertyCheckerImpl() {}
+    public ConfigurationPropertyCheckerImpl() {
+    }
 
-    public ConfigurationPropertyCheckerImpl(ConfigurationPropertyCollector configurationPropertyCollector, Validator validator) {
+    public ConfigurationPropertyCheckerImpl(
+            ConfigurationPropertyCollector configurationPropertyCollector, Validator validator) {
         this.configurationPropertyCollector = configurationPropertyCollector;
         this.validator = validator;
     }
@@ -46,7 +56,8 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
         this.validator = validator;
     }
 
-    public void setConfigurationPropertyCollector(ConfigurationPropertyCollector configurationPropertyCollector) {
+    public void setConfigurationPropertyCollector(
+            ConfigurationPropertyCollector configurationPropertyCollector) {
         this.configurationPropertyCollector = configurationPropertyCollector;
     }
 
@@ -59,7 +70,8 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
 //    }
 
 
-    public List<ValidationErrors> validateConfiguration(ConfigurationPropertySource configurationPropertySource, Class... basePackageFilter) {
+    public List<ValidationErrors> validateConfiguration(
+            ConfigurationPropertySource configurationPropertySource, Class... basePackageFilter) {
 
         List<String> packageName = Arrays.asList(basePackageFilter)
                 .stream()
@@ -69,12 +81,15 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
         return validateConfiguration(configurationPropertySource, packageName);
     }
 
-    public List<ValidationErrors> validateConfiguration(ConfigurationPropertySource configurationPropertySource, String... basePackageFilter) {
+    public List<ValidationErrors> validateConfiguration(
+            ConfigurationPropertySource configurationPropertySource, String... basePackageFilter) {
         return validateConfiguration(configurationPropertySource, Arrays.asList(basePackageFilter));
     }
 
     @Override
-    public List<ValidationErrors> validateConfiguration(ConfigurationPropertySource configurationPropertySource, Collection<Class> configurationClasses) {
+    public List<ValidationErrors> validateConfiguration(
+            ConfigurationPropertySource configurationPropertySource,
+            Collection<Class> configurationClasses) {
         LOGGER.debug("#isConfigurationValid for classes: [{}]", configurationClasses);
 
 //        Collection<ConfigurationPropertiesBean> configurationBeans = configurationPropertyCollector.getConfigurationBeans(basePackageFilter);
@@ -91,17 +106,21 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Tests if the configuration is valid, all properties are loaded from the
      * provided configuration source
      */
-    public List<ValidationErrors> validateConfiguration(ConfigurationPropertySource configurationPropertySource, List<String> basePackageFilter) {
+    public List<ValidationErrors> validateConfiguration(
+            ConfigurationPropertySource configurationPropertySource,
+            List<String> basePackageFilter) {
         LOGGER.debug("#isConfigurationValid for packages: [{}]", basePackageFilter);
 
-        Collection<ConfigurationPropertiesBean> configurationBeans = configurationPropertyCollector.getConfigurationBeans(basePackageFilter);
+        Collection<ConfigurationPropertiesBean> configurationBeans =
+                configurationPropertyCollector.getConfigurationBeans(basePackageFilter);
 
         List<ValidationErrors> collectErrors = configurationBeans.stream()
-                .map(entry -> this.isConfigValidForClazz(configurationPropertySource, entry.getBeanClazz()))
+                .map(entry -> this.isConfigValidForClazz(configurationPropertySource,
+                        entry.getBeanClazz()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
@@ -109,11 +128,13 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
         return collectErrors;
     }
 
-    private Optional<ValidationErrors> isConfigValidForClazz(ConfigurationPropertySource configurationPropertySource, Class configClass) {
+    private Optional<ValidationErrors> isConfigValidForClazz(
+            ConfigurationPropertySource configurationPropertySource, Class configClass) {
 //        Class<?> configClass = entry.getBeanClazz();
 
 //            Object config = configClass.getDeclaredConstructor().newInstance();
-        ConfigurationProperties annotation = AnnotationUtils.getAnnotation(configClass, ConfigurationProperties.class);
+        ConfigurationProperties annotation =
+                AnnotationUtils.getAnnotation(configClass, ConfigurationProperties.class);
         if (annotation == null) {
             return Optional.empty();
         }
@@ -140,8 +161,7 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
             return Optional.of(bindValidationException.getValidationErrors());
         } catch (BindException bindException) {
             Throwable cause = bindException.getCause();
-            if (cause instanceof BindValidationException) {
-                BindValidationException bve = (BindValidationException) cause;
+            if (cause instanceof BindValidationException bve) {
                 return Optional.of(bve.getValidationErrors());
             }
         }
@@ -151,7 +171,7 @@ public class ConfigurationPropertyCheckerImpl implements ConfigurationPropertyCh
 //            LOGGER.trace("is bound!");
 //        }
 
-            //TODO: validate bounded variables
+        //TODO: validate bounded variables
         return Optional.empty();
     }
 

@@ -1,21 +1,29 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.configuration.example1;
 
 import eu.ecodex.utils.configuration.api.annotation.ConfigurationDescription;
 import eu.ecodex.utils.configuration.api.annotation.ConfigurationLabel;
 import eu.ecodex.utils.configuration.example1.validators.CompareStrings;
 import eu.ecodex.utils.configuration.example1.validators.StringComparisonMode;
+import java.nio.file.Path;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
-
 @Component
 @ConfigurationProperties(prefix = "com.example1")
-@CompareStrings(propertyNames = {"password1", "password2"}, matchMode = StringComparisonMode.EQUAL, allowNull = true)
+@CompareStrings(propertyNames = {"password1",
+        "password2"}, matchMode = StringComparisonMode.EQUAL, allowNull = true)
 public class Example1ConfigurationProperties {
 
     @ConfigurationLabel("Property1")
@@ -78,16 +86,16 @@ public class Example1ConfigurationProperties {
         return property1;
     }
 
+    public void setProperty1(String property1) {
+        this.property1 = property1;
+    }
+
     public String getProperty2() {
         return property2;
     }
 
     public void setProperty2(String property2) {
         this.property2 = property2;
-    }
-
-    public void setProperty1(String property1) {
-        this.property1 = property1;
     }
 
     public int getMaxProperty() {

@@ -1,10 +1,19 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.domibus.connector.web.configuration;
 
 import eu.domibus.connector.web.login.LoginView;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -15,9 +24,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Configures Spring Security
@@ -50,7 +56,7 @@ public class SecurityConfig {
     @Order(1)
     public static class ActuatorWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-        private String actuatorBasePath = "actuator";
+        private final String actuatorBasePath = "actuator";
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
@@ -80,25 +86,26 @@ public class SecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
             //disable csrf so vaadin works!
             http.csrf().disable()
-            // Register our CustomRequestCache, that saves unauthorized access attempts, so
-            // the user is redirected after login.
-            .requestCache().requestCache(new CustomRequestCache())
+                    // Register our CustomRequestCache, that saves unauthorized access attempts, so
+                    // the user is redirected after login.
+                    .requestCache().requestCache(new CustomRequestCache())
 
-            // Restrict access to our application.
-            .and().authorizeRequests()
+                    // Restrict access to our application.
+                    .and().authorizeRequests()
 
-            // Allow all flow internal requests.
-            .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
+                    // Allow all flow internal requests.
+                    .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
 
-            // Allow all requests by logged in users.
-            .anyRequest().authenticated()
+                    // Allow all requests by logged in users.
+                    .anyRequest().authenticated()
 
 //             Configure the login page.
-            .and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
-            .failureUrl(LOGIN_FAILURE_URL)
+                    .and().formLogin().loginPage(LOGIN_URL).permitAll()
+                    .loginProcessingUrl(LOGIN_PROCESSING_URL)
+                    .failureUrl(LOGIN_FAILURE_URL)
 
 //             Configure logout
-            .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+                    .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
 
         }
 
@@ -139,17 +146,16 @@ public class SecurityConfig {
                     //allow access to webservices
                     "/services/**"
 
-                    );
+            );
         }
     }
 
 
-
-
-//    @Configuration
+    //    @Configuration
 //    @Order(499)
 //    @Profile("dev")
-    public static class VaadinDevelopmentWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+    public static class VaadinDevelopmentWebSecurityConfiguration
+            extends WebSecurityConfigurerAdapter {
 
 //        @Autowired
 //        ConnectorUiConfigurationProperties connectorUiConfigurationProperties;

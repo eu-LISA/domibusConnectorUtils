@@ -1,22 +1,27 @@
+/*
+ * Copyright (c) 2024. European Union Agency for the Operational Management of Large-Scale IT Systems in the Area of Freedom, Security and Justice (eu-LISA)
+ *
+ * Licensed under the EUPL, Version 1.2 or – as soon they will be approved by the European Commission - subsequent versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy at: https://joinup.ec.europa.eu/software/page/eupl
+ */
+
 package eu.ecodex.utils.monitor.gw.service;
 
+
+import static eu.ecodex.utils.monitor.gw.config.GatewayMonitorConfigurationProperties.GATEWAY_MONITOR_PREFIX;
 
 import eu.ecodex.utils.monitor.gw.config.GatewayMonitorConfigurationProperties;
 import eu.ecodex.utils.monitor.gw.domain.AccessPoint;
 import eu.ecodex.utils.monitor.gw.domain.AccessPointsConfiguration;
-
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static eu.ecodex.utils.monitor.gw.config.GatewayMonitorConfigurationProperties.GATEWAY_MONITOR_PREFIX;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 public class ConfiguredGatewaysService {
 
@@ -30,7 +35,8 @@ public class ConfiguredGatewaysService {
 
     private AccessPointsConfiguration accesPointConfig = new AccessPointsConfiguration();
 
-    public void setMonitorConfigurationProperties(GatewayMonitorConfigurationProperties monitorConfigurationProperties) {
+    public void setMonitorConfigurationProperties(
+            GatewayMonitorConfigurationProperties monitorConfigurationProperties) {
         this.monitorConfigurationProperties = monitorConfigurationProperties;
     }
 
@@ -68,7 +74,6 @@ public class ConfiguredGatewaysService {
     }
 
     /**
-     *
      * @param name the accesspoint name
      * @return the accesspoint with the name or null if none found
      */
