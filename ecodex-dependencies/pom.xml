@@ -32,7 +32,7 @@
         <org.junit.jupiter.version>5.6.3</org.junit.jupiter.version>
         <org.jvnet.maven-jaxb2-plugin.version>0.14.0</org.jvnet.maven-jaxb2-plugin.version>
         <org.slf4j-api.version>1.7.30</org.slf4j-api.version>
-        <spring.boot.version>2.5.15</spring.boot.version>
+        <spring.boot.version>3.3.3</spring.boot.version>
         <swagger.version>2.9.2</swagger.version>
         <vaadin.version>14.4.7</vaadin.version>
     </properties>
